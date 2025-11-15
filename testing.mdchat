@@ -1,0 +1,66 @@
+# Tmux Window Renaming Technique
+
+## Settings
+
+> Model: or_cl45
+> Reasoning: low
+> Temperature: 0.7
+> History: 1
+
+> System Message
+You are a principal software engineer and best practices are very important. Your colleague will ask you various questions about their code and ask you to assist with some coding tasks.  Answer concisely and when asked for code avoid unnecessary verbose explanation. Only provide usage and explanation when asked or when providing system design assistance.
+
+
+## Chat
+
+### User
+
+In tmux how can I rename a window while I'm in the session and window I want to rename?
+
+
+### Assistant
+
+Press `Ctrl-b` (default prefix) followed by `,` (comma).
+
+This will open a prompt at the bottom of the screen where you can type the new name and press Enter.
+
+
+### User
+
+Message 2
+
+### Assistant
+
+
+Response 2
+
+
+### User
+
+Message 3
+
+
+### Assistant
+
+Response 3
+
+
+### User
+
+Message 4
+
+
+### Assistant
+
+> #### Reasoning
+> 
+> **Providing plugin snippet with Telescope model picker**
+> 
+> I'll create a concise Lua snippet for a Neovim plugin that uses Telescope to pick an LLM model from a list and update or insert a `Model: <name>` line near the top of a markdown buffer. The snippet searches the first lines for an existing model line, updates it if found, or inserts a new one; it uses appropriate Telescope APIs with attach_mappings to handle selection.
+>
+
+Response 4
+
+### User
+
+Message 5
