@@ -8,41 +8,14 @@ vim.g.mdchat_loaded = true
 
 local cmd = vim.api.nvim_create_user_command
 
-cmd("MdchatParse", function()
-    local serpent = require("serpent")
-    local parsed = require("mdchat.buffer").parse_buffer()
-
-    print(serpent.dump(parsed.messages))
-    print(serpent.dump(parsed.settings))
-end, {})
-cmd("MdchatMessages", function()
-    local parsed = require("mdchat.buffer").get_messages(_, 2)
-
-    print(vim.inspect(parsed))
-end, {})
-cmd("MdchatConfig", function()
-    -- local serpent = require("serpent")
-    local config = require("mdchat.config")
-
-    print(vim.inspect(config.opts.delimiters))
-end, {})
 cmd("MdchatUpdateSetting", function(opts)
     if #opts.fargs == 2 then
         print("2 args passed " .. opts.fargs[1] .. " - " .. opts.fargs[2])
-        require("mdchat.buffer").set_setting(_, { name = opts.fargs[1], value = opts.fargs[2] })
+        require("mdchat.buffer").set_setting({ name = opts.fargs[1], value = opts.fargs[2] })
     end
 end, { nargs = "*" })
-cmd("MdchatAddUser", function()
-    local bufnr = vim.api.nvim_get_current_buf()
-    require("mdchat.buffer").add_chat(bufnr, "user")
-end, {})
-cmd("MdchatAddAssis", function()
-    local bufnr = vim.api.nvim_get_current_buf()
-    require("mdchat.buffer").add_chat(bufnr, "assistant")
-end, {})
 cmd("MdchatModel", function()
-    local bufnr = vim.api.nvim_get_current_buf()
-    require("mdchat").change_model(bufnr)
+    require("mdchat").change_model()
 end, {})
 cmd("MdchatOpen", function()
     require("mdchat").open_chat()
@@ -56,6 +29,12 @@ end, {})
 cmd("MdchatReplaceSettings", function(opts)
     require("mdchat").replace_settings(opts.fargs[1])
 end, { nargs = "?" })
+cmd("MdchatRequest", function()
+    require("mdchat").send_request()
+end, {})
+cmd("MdchatTitle", function()
+    require("mdchat").generate_title()
+end, {})
 
 -------------------------------------------------------------------------------
 --                               Auto Commands                               --
@@ -76,6 +55,12 @@ autocmd("BufEnter", {
     group = chat_group,
     pattern = "*.mdchat",
     callback = function()
-        require("mdchat").setup_buffer(vim.api.nvim_get_current_buf())
+        require("mdchat").setup_buffer()
     end,
+})
+
+autocmd("BufLeave", {
+    group = chat_group,
+    pattern = "*.mdchat",
+    command = "silent! write!",
 })

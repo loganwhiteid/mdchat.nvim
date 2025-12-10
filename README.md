@@ -30,7 +30,6 @@ Using lazy.nvim
 {
   "loganwhiteid/mdchat.nvim",
   dependencies = {
-    "MunifTanjim/nui.nvim",
     "nvim-telescope/telescope.nvim",
   },
   opts = {

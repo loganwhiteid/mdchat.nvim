@@ -1,6 +1,7 @@
 local config = require("mdchat.config")
 local buffer = require("mdchat.buffer")
 local files = require("mdchat.files")
+local api = require("mdchat.api")
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local actions = require("telescope.actions")
@@ -9,8 +10,8 @@ local themes = require("telescope.themes")
 
 local M = {}
 
--- HACK: PoC for completions
--- TODO: Will need to move and rewrite
+-- WARN: PoC for completions
+-- Will need to move and rewrite
 local function setup_cmp()
     local ok, cmp = pcall(require, "cmp")
     if not ok then
@@ -34,21 +35,20 @@ local function setup_cmp()
     source.complete = function(self, params, callback)
         local line = params.context.cursor_before_line
         if line:match("^" .. config.opts.delimiters.model .. "%s*$") then
-            -- TODO: Move this to a function that's being called repeatedly
             local models = {}
-            for title, mapping in pairs(config.model_aliases) do
-                for alias, name in pairs(mapping) do
-                    table.insert(models, {
-                        label = alias,
-                        sortText = alias,
-                        detail = "# API Provider: "
-                            .. title
-                            .. "\n# Model: "
-                            .. name
-                            .. "\n\n## Default: "
-                            .. config.opts.default.model,
-                    })
-                end
+            for alias, mapping in pairs(config.opts.models) do
+                -- for alias, name in pairs(mapping) do
+                table.insert(models, {
+                    label = alias,
+                    sortText = alias,
+                    detail = "# API Provider: "
+                        .. mapping.provider
+                        .. "\n# Model: "
+                        .. mapping.model
+                        .. "\n\n## Default: "
+                        .. config.opts.default.model,
+                })
+                -- end
             end
             table.sort(models, function(a, b)
                 return a.label < b.label
@@ -74,7 +74,7 @@ local function setup_cmp()
                         detail = detail_text,
                     },
                     {
-                        label = "med",
+                        label = "medium",
                         detail = detail_text,
                     },
                     {
@@ -100,14 +100,14 @@ local function setup_cmp()
             local history = config.opts.default.history or "nil"
             local detail_text = [[
 # Number of past request and response pairs to include in the next request
-- Use `nil` or delete the line if you want to include all history
+- Use `all` or delete the line if you want to include all history
 - Use `0` if you only want to send your current request
 
 ## Default: ]]
             callback({
                 items = {
                     {
-                        label = "nil",
+                        label = "all",
                         detail = detail_text .. history,
                     },
                     {
@@ -124,10 +124,9 @@ local function setup_cmp()
     cmp.register_source("llm_config", source.new())
 end
 
-function M.setup_buffer(bufnr)
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
-    buffer.setup_buffer(bufnr)
-    -- TODO: should have keymap logic here instead of in buffer.lua
+function M.setup_buffer()
+    buffer.setup_buffer()
+    -- TODO: should have buffer specific keymap logic here instead of in buffer.lua
 end
 
 function M.open_chat(filename)
@@ -138,18 +137,14 @@ function M.create_new_chat()
     files.create_new_chat()
 end
 
-function M.change_model(bufnr)
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
+function M.change_model()
     local entries = {}
-    for provider, mapping in pairs(config.model_aliases) do
-        for alias, model in pairs(mapping) do
-            -- print(string.format("%s - %s", provider, alias))
-            table.insert(entries, {
-                label = string.format("%s | %s → %s", provider, model, alias),
-                ordinal = string.format("%s %s", provider, model),
-                value = alias,
-            })
-        end
+    for alias, mapping in pairs(config.opts.models) do
+        table.insert(entries, {
+            label = string.format("%s | %s → %s", mapping.provider, mapping.model, alias),
+            ordinal = string.format("%s %s", mapping.provider, mapping.model),
+            value = alias,
+        })
     end
     table.sort(entries, function(a, b)
         return a.ordinal < b.ordinal
@@ -174,7 +169,7 @@ function M.change_model(bufnr)
                     local selection = action_state.get_selected_entry()
                     if selection then
                         print(selection.value)
-                        buffer.set_setting(bufnr, { name = "model", value = selection.value })
+                        buffer.set_setting({ name = "model", value = selection.value })
                     end
                 end)
                 return true
@@ -185,13 +180,12 @@ end
 
 function M.replace_settings(filename)
     files.get_system_settings(filename, function(settings)
-        buffer.set_settings(nil, vim.split(settings, "\n"))
+        buffer.set_settings(vim.split(settings, "\n"))
     end)
 end
 
 -- TODO: implement NUI prompt
-function M.save_settings(bufnr)
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
+function M.save_settings()
     local filename = "settings"
 
     vim.ui.input({ prompt = "Enter filename: " }, function(input)
@@ -199,13 +193,96 @@ function M.save_settings(bufnr)
             filename = input
         end
     end)
-    local settings = buffer.get_settings_string(bufnr)
+    local settings = buffer.get_settings_string()
     files.save_system_settings(filename, settings)
+end
+
+function M.send_request()
+    local parsed_buf = buffer.parse_buffer()
+    -- get buffer settings
+    -- TODO: need clone the settings with values only. API doesn't need to know about setting position in the buffer
+    local buf_settings = parsed_buf.settings
+    -- parsed_buf returns all messages in the buffer. get_messages can be used to shrink messages table to the history value only
+
+    local buf_messages
+    local history_val = buf_settings.history.value
+    if history_val and history_val ~= "all" then
+        buf_messages = buffer.get_messages(parsed_buf.messages, buf_settings.history.value)
+    else
+        buf_messages = parsed_buf.messages
+    end
+
+    -- check and update title
+    if buffer.get_title()[1] == config.opts.default.title then
+        print("generating title")
+        M.generate_title()
+    end
+
+    -- print(vim.inspect(buf_messages))
+    local state = { is_reasoning = false }
+    local function process_response(response)
+        --response should always be {error, content, reason}
+        if response.error and response.error ~= "" then
+            -- TODO: need better error log/print
+            print("Response returned error: " .. response.error)
+        else
+            buffer.add_response(response, state)
+        end
+    end
+    local function on_complete()
+        buffer.add_header("user")
+        buffer.save_chat()
+    end
+
+    buffer.add_header("assistant")
+    local opts = {
+        settings = buf_settings,
+        messages = buf_messages,
+        stream = true,
+        response_callback = process_response,
+        complete_callback = on_complete,
+    }
+    api.sendRequest(opts)
+end
+
+function M.generate_title()
+    local messages = buffer.get_messages(nil, 0)
+    local settings = {}
+    settings.model = { value = config.opts.title_model }
+    settings.system_message = [[Your task is to summarize the conversation into a title]]
+
+    table.insert(messages, {
+        role = "user",
+        content = "Write a short (1-5 words) title for this conversation based on the previous message. Only write the title, do not respond to the query.",
+    })
+
+    local function process_response(response)
+        if response.error and response.error ~= "" then
+            -- TODO: need better error log/print
+            print("Response returned error: " .. response.error)
+        else
+            -- print(vim.inspect(response))
+            buffer.set_title(response.content)
+        end
+    end
+    local function on_complete()
+        print("title updated")
+    end
+
+    local opts = {
+        settings = settings,
+        messages = messages,
+        stream = false,
+        response_callback = process_response,
+        complete_callback = on_complete,
+    }
+    api.sendRequest(opts)
 end
 
 function M.setup(opts)
     config.setup(opts)
     setup_cmp()
+    vim.keymap.set("n", config.opts.keymap.send_message, M.send_request, { buffer = vim.g.mdchat_cur_bufnr })
 end
 
 return M

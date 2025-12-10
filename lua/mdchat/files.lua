@@ -15,7 +15,7 @@ local M = {}
 --  - settings buffer
 --]]
 
-M.open_chat = function(filename)
+function M.open_chat(filename)
     local chat_path = config.opts.root_dir .. config.opts.chat_dir
 
     if filename and filename ~= "" then
@@ -102,18 +102,8 @@ M.open_chat = function(filename)
 end
 
 -- TODO: refactor. Files module shouldn't be directly messing with buffers
-M.create_new_chat = function()
+function M.create_new_chat()
     local chat_path = config.opts.root_dir .. config.opts.chat_dir
-    -- don't create new file if one already exists with default title
-    -- for _, file in ipairs(vim.fn.readdir(chat_path)) do
-    --     local path = string.format("%s/%s", chat_path, file)
-    --     local lines = vim.fn.readfile(path)
-    --     if lines[1] == config.opts.default.title then
-    --         vim.cmd("edit " .. path)
-    --         return vim.api.nvim_get_current_buf()
-    --     end
-    -- end
-
     local timestamp = os.date("%Y-%m-%d_%H-%M-%S")
     local filename = string.format("%s/%s.mdchat", chat_path, timestamp)
 
@@ -154,7 +144,7 @@ M.create_new_chat = function()
     return bufnr
 end
 
-local read_settings_file = function(filename)
+local function read_settings_file(filename)
     --expects full expanded path
     local file = io.open(filename, "r")
     if not file then
@@ -167,8 +157,7 @@ local read_settings_file = function(filename)
     return content
 end
 
--- TODO: needs refactor. build without callbacks
-M.get_system_settings = function(filename, callback)
+function M.get_system_settings(filename, callback)
     local file_path = vim.fn.expand(vim.fs.joinpath(config.opts.root_dir, config.opts.system_dir))
     local settings_string = ""
     if filename and filename ~= "" then
@@ -255,7 +244,7 @@ end
 ---
 ---@param name string filename to use
 ---@param settings string prebuilt string of the settings section of a buffer
-M.save_system_settings = function(name, settings)
+function M.save_system_settings(name, settings)
     local file_path = vim.fn.expand(vim.fs.joinpath(config.opts.root_dir, config.opts.system_dir))
     vim.fn.mkdir(file_path, "p")
 
