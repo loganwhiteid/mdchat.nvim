@@ -31,8 +31,6 @@ local function default_data(settings, messages, model_name, stream)
     if settings.temp then
         data.temperature = settings.temp.value
     end
-    -- local reasoning_val = settings.reasoning.value
-    -- if reasoning_val and reasoning_val ~= "nil" and string.lower(reasoning_val) ~= "none" then
     if
         settings.reasoning
         and settings.reasoning.value ~= "nil"
@@ -128,6 +126,10 @@ function M.sendRequest(opts)
     -- print("API SEND REQUEST---")
     -- print(vim.inspect(parsed_buf))
     -- vim.api.nvim_buf_set_lines(0, -1, -1, false, vim.split(vim.inspect(opts), "\n", { plain = true }))
+
+    -- reset stop_generation flag
+    vim.g.mdchat_stop_generation = false
+
     local provider_name
     local model_name
     if config.opts.models[opts.settings.model.value] then
@@ -163,7 +165,11 @@ function M.sendRequest(opts)
     local job = Job:new({
         command = "curl",
         args = curl_args,
-        on_stdout = function(_, chunk)
+        on_stdout = function(_, chunk, self)
+            if vim.g.mdchat_stop_generation == true then
+                self:shutdown()
+                return
+            end
             vim.schedule(function()
                 -- local decoded = vim.inspect(chunk)
                 -- local lines = vim.split(decoded, "\n", { plain = true })

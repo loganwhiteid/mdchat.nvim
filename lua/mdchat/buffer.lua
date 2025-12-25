@@ -42,7 +42,9 @@ function M.setup_buffer()
     -- Set buffer keymaps
     vim.keymap.set("n", config.opts.keymap.jump_next_header, jump_to_next_header, { buffer = bufnr })
     vim.keymap.set("n", config.opts.keymap.jump_prev_header, jump_to_prev_header, { buffer = bufnr })
-    -- TODO: still need to add cancel functions
+    vim.keymap.set("n", config.opts.keymap.stop_generation, function()
+        vim.g.mdchat_stop_generation = true
+    end, { buffer = bufnr })
 
     ---Set a global variable for the current chat buffer. That way we don't have to keep passing bufnr from other modules
     vim.g.mdchat_cur_bufnr = bufnr

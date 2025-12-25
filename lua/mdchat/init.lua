@@ -198,6 +198,9 @@ function M.save_settings()
 end
 
 function M.send_request()
+    -- reset stop_generation flag
+    vim.g.mdchat_stop_generation = false
+
     local parsed_buf = buffer.parse_buffer()
     -- get buffer settings
     -- TODO: need clone the settings with values only. API doesn't need to know about setting position in the buffer
