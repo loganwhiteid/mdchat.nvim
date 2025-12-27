@@ -2,21 +2,29 @@ local config = require("mdchat.config")
 
 local M = {}
 
---[[
--- Files needs to have the following features
--- file save
--- file open
--- file search
---]]
+local function read_settings_file(filename)
+    --expects full expanded path
+    local file = io.open(filename, "r")
+    if not file then
+        vim.notify("Failed to open file: " .. filename, vim.log.levels.ERROR)
+        return ""
+    end
+    local content = file:read("*a")
+    file:close()
 
---[[
--- stored settings
---  - Name
---  - settings buffer
---]]
+    return content
+end
+
+-- Need to ensure the config paths exist before trying to read or write to them
+function M.ensure_dir(path)
+    local ok = vim.fn.mkdir(path, "p")
+    if not ok then
+        vim.notify("Failed to create directory: " .. path, vim.log.levels.ERROR)
+    end
+end
 
 function M.open_chat(filename)
-    local chat_path = config.opts.root_dir .. config.opts.chat_dir
+    local chat_path = vim.fn.expand(vim.fs.joinpath(config.opts.root_dir, config.opts.chat_dir))
 
     if filename and filename ~= "" then
         vim.cmd("edit " .. chat_path .. "/" .. filename)
@@ -103,7 +111,7 @@ end
 
 -- TODO: refactor. Files module shouldn't be directly messing with buffers
 function M.create_new_chat()
-    local chat_path = config.opts.root_dir .. config.opts.chat_dir
+    local chat_path = vim.fn.expand(vim.fs.joinpath(config.opts.root_dir, config.opts.chat_dir))
     local timestamp = os.date("%Y-%m-%d_%H-%M-%S")
     local filename = string.format("%s/%s.mdchat", chat_path, timestamp)
 
@@ -142,19 +150,6 @@ function M.create_new_chat()
     vim.cmd("write")
 
     return bufnr
-end
-
-local function read_settings_file(filename)
-    --expects full expanded path
-    local file = io.open(filename, "r")
-    if not file then
-        vim.notify("Failed to open file: " .. filename, vim.log.levels.ERROR)
-        return ""
-    end
-    local content = file:read("*a")
-    file:close()
-
-    return content
 end
 
 function M.get_system_settings(filename, callback)

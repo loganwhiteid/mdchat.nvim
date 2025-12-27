@@ -286,6 +286,12 @@ function M.setup(opts)
     config.setup(opts)
     setup_cmp()
     vim.keymap.set("n", config.opts.keymap.send_message, M.send_request, { buffer = vim.g.mdchat_cur_bufnr })
+
+    --ensure chat and settings paths exist
+    local chat_path = vim.fn.expand(vim.fs.joinpath(config.opts.root_dir, config.opts.chat_dir))
+    local settings_path = vim.fn.expand(vim.fs.joinpath(config.opts.root_dir, config.opts.system_dir))
+    files.ensure_dir(chat_path)
+    files.ensure_dir(settings_path)
 end
 
 return M
