@@ -229,10 +229,15 @@ function M.get_messages(messages, history)
     end
 end
 
-function M.add_header(header)
+-- Text param used as a way to add an extra string after the header delimiter
+function M.add_header(header, text)
     local bufnr = vim.g.mdchat_cur_bufnr
     if config.opts.delimiters[header] ~= nil then
-        vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, { "", config.opts.delimiters[header], "", "" })
+        local line = config.opts.delimiters[header]
+        if text ~= nil then
+            line = line .. " " .. text
+        end
+        vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, { "", line, "", "" })
     end
 end
 

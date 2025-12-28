@@ -237,7 +237,28 @@ function M.send_request()
         buffer.save_chat()
     end
 
-    buffer.add_header("assistant")
+    -- generate snapshot of settings to display on "Assistant" header
+    local snapshot
+    if config.opts.show_snapshot then
+        snapshot = "- {Model: " .. buf_settings.model.value
+        if buf_settings.temp then
+            snapshot = snapshot .. ", Temp: " .. buf_settings.temp.value
+        end
+        if buf_settings.history then
+            snapshot = snapshot .. ", History: " .. buf_settings.history.value
+        end
+        if buf_settings.reasoning then
+            snapshot = snapshot .. ", Reasoning: " .. buf_settings.reasoning.value
+        end
+        if buf_settings.exclude_reason then
+            snapshot = snapshot .. ", Exclude Reason: " .. buf_settings.exclude_reason.value
+        end
+        snapshot = snapshot .. "}"
+    end
+
+    -- add assistant header with snapshot
+    buffer.add_header("assistant", snapshot)
+
     local opts = {
         settings = buf_settings,
         messages = buf_messages,

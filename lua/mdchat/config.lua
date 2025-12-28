@@ -21,6 +21,7 @@ Answer concisely and when asked for code avoid unnecessary verbose explanation. 
     title_model = "haiku",
     auto_scroll = true, -- scroll to bottom of chat when response is finished
     scroll_on_focus = false, -- automatically scroll to the bottom when chat is focused
+    show_snapshot = true, -- Print snapshot of settings used at the end of Assistant header
 
     --- chat buffer specific keymaps
     keymap = {
