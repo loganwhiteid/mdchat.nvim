@@ -2,6 +2,7 @@
 
 > [!WARNING]
 > BOTH THE PLUGIN AND README ARE VERY MUCH A WORK IN PROGRESS
+> CURRENT FEATURES ONLY FUNCTIONAL ON LINUX
 
 A basic LLM chat system using Markdown files as your active chat
 
