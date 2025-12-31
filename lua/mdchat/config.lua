@@ -61,7 +61,7 @@ Answer concisely and when asked for code avoid unnecessary verbose explanation. 
         ["openai"] = {
             url = "https://api.openai.com/v1/chat/completions",
             api_key = function()
-                local f = assert(io.open(os.getenv("HOME") .. "/.chat/openai", "r"))
+                local f = assert(io.open(vim.fn.expand("~/.chat/openai"), "r"))
                 local api_key = string.gsub(f:read("*all"), "\n", "")
                 f:close()
                 return api_key
@@ -70,7 +70,7 @@ Answer concisely and when asked for code avoid unnecessary verbose explanation. 
         ["openrouter"] = {
             url = "https://openrouter.ai/api/v1/chat/completions",
             api_key = function()
-                local f = assert(io.open(os.getenv("HOME") .. "/.chat/openrouter", "r"))
+                local f = assert(io.open(vim.fn.expand("~/.chat/openrouter"), "r"))
                 local api_key = string.gsub(f:read("*all"), "\n", "")
                 f:close()
                 return api_key
@@ -79,7 +79,7 @@ Answer concisely and when asked for code avoid unnecessary verbose explanation. 
         ["anthropic"] = {
             url = "https://api.anthropic.com/v1/messages",
             api_key = function()
-                local f = assert(io.open(os.getenv("HOME") .. "/.chat/anthropic", "r"))
+                local f = assert(io.open(vim.fn.expand("~/.chat/anthropic"), "r"))
                 local api_key = string.gsub(f:read("*all"), "\n", "")
                 f:close()
                 return api_key
