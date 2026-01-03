@@ -208,8 +208,7 @@ function M.send_request()
     -- parsed_buf returns all messages in the buffer. get_messages can be used to shrink messages table to the history value only
 
     local buf_messages
-    local history_val = buf_settings.history.value
-    if history_val and history_val ~= "all" then
+    if buf_settings.history and buf_settings.history.value ~= "all" then
         buf_messages = buffer.get_messages(parsed_buf.messages, buf_settings.history.value)
     else
         buf_messages = parsed_buf.messages
