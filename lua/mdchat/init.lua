@@ -137,6 +137,17 @@ function M.create_new_chat()
     files.create_new_chat()
 end
 
+function M.clone_chat()
+    local new_file = files.clone_chat()
+    if new_file then
+        files.open_chat(new_file)
+        local title = string.sub(buffer.get_title(), 3, -1)
+        buffer.set_title(title .. " - (Cloned)")
+    else
+        print("failed to clone chat")
+    end
+end
+
 function M.change_model()
     local entries = {}
     for alias, mapping in pairs(config.opts.models) do
@@ -215,7 +226,7 @@ function M.send_request()
     end
 
     -- check and update title
-    if buffer.get_title()[1] == config.opts.default.title then
+    if buffer.get_title() == config.opts.default.title then
         print("generating title")
         M.generate_title()
     end

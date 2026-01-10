@@ -289,9 +289,10 @@ function M.add_response(response, state)
     end
 end
 
+-- Returns whole first line including leading markdown header tag `# `
 function M.get_title()
     local bufnr = vim.g.mdchat_cur_bufnr
-    return vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)
+    return vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)[1]
 end
 
 function M.set_title(title)

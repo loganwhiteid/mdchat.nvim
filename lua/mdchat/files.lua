@@ -109,6 +109,25 @@ function M.open_chat(filename)
     end, 100)
 end
 
+function M.clone_chat()
+    local cur_path = vim.api.nvim_buf_get_name(vim.g.mdchat_cur_bufnr)
+    if not cur_path then
+        print("failed to get current chat buffer")
+        return
+    end
+
+    local chat_path = vim.fn.expand(vim.fs.joinpath(config.opts.root_dir, config.opts.chat_dir))
+    local timestamp = os.date("%Y-%m-%d_%H-%M-%S")
+    local new_path = string.format("%s/%s.mdchat", chat_path, timestamp)
+
+    if vim.uv.fs_copyfile(cur_path, new_path, {}) then
+        -- returning just the new file name due to how open_chat is built
+        return string.format("%s.mdchat", timestamp)
+    else
+        return
+    end
+end
+
 -- TODO: refactor. Files module shouldn't be directly messing with buffers
 function M.create_new_chat()
     local chat_path = vim.fn.expand(vim.fs.joinpath(config.opts.root_dir, config.opts.chat_dir))
