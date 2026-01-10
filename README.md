@@ -3,6 +3,7 @@
 > [!WARNING]
 > BOTH THE PLUGIN AND README ARE VERY MUCH A WORK IN PROGRESS
 > CURRENT FEATURES ONLY FUNCTIONAL ON LINUX
+> DEFAULT API CALLBACKS BUILT AROUND OPENROUTER
 
 A basic LLM chat system using Markdown files as your active chat
 
@@ -22,11 +23,12 @@ After using it for a while I decided I wanted to make my own version as a way to
 
 ### Features
 
-- Change system settings on the fly manually or from user stored defaults
-- Modify chat history (changes or deletions)
-- Use chat file in a full window or [!TODO] popup via nui
-- Uses OpenRouter API Schema by default but allows for manual configuration of other schemas
-  - OpenAI and Anthropic schemas are WIP
+- [x] Change system settings on the fly manually or from user stored defaults
+- [x] Modify chat history (changes or deletions)
+- [ ] Use chat file in a full window or [!TODO] popup via nui
+- [x] Uses OpenRouter API Schema by default but allows for manual configuration of other schemas
+- [ ] Include OpenAI and Anthropic schemas
+- [x] Clone current chat into new chat buffer (clone file, add `Cloned` tag to header)
 
 ## Installation
 
