@@ -20,6 +20,9 @@ end, {})
 cmd("MdchatOpen", function()
     require("mdchat").open_chat()
 end, {})
+cmd("MdchatFocus", function()
+    require("mdchat").focus_chat()
+end, {})
 cmd("MdchatClone", function()
     require("mdchat").clone_chat()
 end, {})
@@ -66,4 +69,14 @@ autocmd("BufLeave", {
     group = chat_group,
     pattern = "*.mdchat",
     command = "silent! write!",
+})
+
+autocmd("BufDelete", {
+    group = chat_group,
+    pattern = "*.mdchat",
+    callback = function(args)
+        if args.buf == vim.g.mdchat_cur_bufnr then
+            vim.g.mdchat_cur_bufnr = nil
+        end
+    end,
 })

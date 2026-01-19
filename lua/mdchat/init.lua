@@ -133,6 +133,14 @@ function M.open_chat(filename)
     files.open_chat(filename)
 end
 
+function M.focus_chat()
+    if vim.g.mdchat_cur_bufnr and vim.api.nvim_buf_is_valid(vim.g.mdchat_cur_bufnr) then
+        vim.api.nvim_set_current_buf(vim.g.mdchat_cur_bufnr)
+    else
+        M.open_chat()
+    end
+end
+
 function M.create_new_chat()
     files.create_new_chat()
 end
